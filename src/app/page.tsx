@@ -84,7 +84,7 @@ export default async function Dashboard() {
           <h4 className="text-lg font-semibold mb-6">Recent Activity</h4>
           {recentActivity.length > 0 ? (
             <div className="space-y-4">
-              {recentActivity.map((activity) => (
+              {recentActivity.map((activity: Attendance) => (
                 <div key={activity.id} className="flex items-center p-4 rounded-xl border border-border/50 bg-white/30">
                   <div className="p-2 bg-green-50 rounded-lg mr-4">
                     <Clock className="h-4 w-4 text-green-600" />
@@ -106,7 +106,7 @@ export default async function Dashboard() {
           <h4 className="text-lg font-semibold mb-6">Upcoming Deadlines</h4>
           <div className="space-y-4">
             {upcomingTasks.length > 0 ? (
-              upcomingTasks.map((task) => (
+              upcomingTasks.map((task: Task) => (
                 <div key={task.id} className="flex items-center p-3 rounded-xl border border-border/50 hover:bg-white/50 transition-colors cursor-pointer">
                   <div className={cn(
                     "w-2 h-2 rounded-full mr-4",
