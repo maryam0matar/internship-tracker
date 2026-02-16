@@ -1,5 +1,6 @@
 {
   "name": "internship-tracker",
+  "description": "Internship monitoring and reporting platform",
   "version": "0.1.0",
   "private": true,
   "scripts": {
