@@ -12,6 +12,17 @@ export async function createTask(formData: FormData) {
     const priority = (formData.get("priority") as Priority) || "MEDIUM";
     const dueDate = formData.get("dueDate") ? new Date(formData.get("dueDate") as string) : null;
 
+    // Ensure dummy user exists for the demo phase
+    await prisma.user.upsert({
+        where: { id: userId },
+        update: {},
+        create: {
+            id: userId,
+            name: "Mariam",
+            email: "mariam@example.com"
+        }
+    });
+
     await prisma.task.create({
         data: {
             userId,
