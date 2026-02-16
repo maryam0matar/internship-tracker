@@ -8,7 +8,10 @@ import {
   Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AttendanceContent } from "@/components/attendance/attendance-content";
 import { Attendance, Task } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 // Temporary fixed user ID for the demo/early functional phase
 const DUMMY_USER_ID = "cl_user_123";
