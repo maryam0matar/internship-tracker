@@ -23,6 +23,17 @@ export async function checkIn(status: AttendanceStatus = "PRESENT", notes?: stri
 
     if (existing) return { error: "Already checked in today" };
 
+    // Ensure dummy user exists for the demo phase
+    await prisma.user.upsert({
+        where: { id: DUMMY_USER_ID },
+        update: {},
+        create: {
+            id: DUMMY_USER_ID,
+            name: "Mariam",
+            email: "mariam@example.com"
+        }
+    });
+
     const record = await prisma.attendance.create({
         data: {
             userId: DUMMY_USER_ID,

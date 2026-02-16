@@ -29,7 +29,7 @@ export function Sidebar() {
     return (
         <div className="w-64 h-screen border-r flex flex-col glass fixed left-0 top-0 z-40">
             <div className="p-6">
-                <h1 className="text-xl font-bold tracking-tight">Internship Tracker Pro</h1>
+                <h1 className="text-xl font-bold tracking-tight">Internship Tracker v4</h1>
             </div>
 
             <nav className="flex-1 px-4 space-y-1">
