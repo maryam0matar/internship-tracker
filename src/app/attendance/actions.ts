@@ -4,30 +4,73 @@ import { prisma } from "@/lib/prisma";
 import { AttendanceStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-export async function createAttendance(formData: FormData) {
-    const userId = "cl_user_123"; // Skeleton/Demo user ID for now
-    const status = formData.get("status") as AttendanceStatus;
-    const notes = formData.get("notes") as string;
-    const date = new Date(formData.get("date") as string);
+// Temporary fixed user ID for the demo/early functional phase
+const DUMMY_USER_ID = "cl_user_123";
 
-    await prisma.attendance.create({
+export async function checkIn(status: AttendanceStatus = "PRESENT", notes?: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Check if already checked in today
+    const existing = await prisma.attendance.findFirst({
+        where: {
+            userId: DUMMY_USER_ID,
+            date: {
+                gte: today,
+            },
+        },
+    });
+
+    if (existing) return { error: "Already checked in today" };
+
+    const record = await prisma.attendance.create({
         data: {
-            userId,
+            userId: DUMMY_USER_ID,
             status,
             notes,
-            date,
+            date: new Date(),
             checkIn: new Date(),
         },
     });
 
     revalidatePath("/attendance");
+    revalidatePath("/");
+    return record;
 }
 
-export async function updateAttendance(id: string, checkOut: boolean = false) {
-    await prisma.attendance.update({
+export async function checkOut(id: string) {
+    const record = await prisma.attendance.update({
         where: { id },
-        data: checkOut ? { checkOut: new Date() } : {},
+        data: {
+            checkOut: new Date(),
+        },
     });
 
+    // Calculate hours if both exist
+    if (record.checkIn && record.checkOut) {
+        const diff = record.checkOut.getTime() - record.checkIn.getTime();
+        const hours = diff / (1000 * 60 * 60);
+        await prisma.attendance.update({
+            where: { id },
+            data: { hours },
+        });
+    }
+
     revalidatePath("/attendance");
+    revalidatePath("/");
+    return record;
+}
+
+export async function getTodayAttendance() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return await prisma.attendance.findFirst({
+        where: {
+            userId: DUMMY_USER_ID,
+            date: {
+                gte: today,
+            },
+        },
+    });
 }

@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import {
   Users,
   Clock,
@@ -6,8 +7,47 @@ import {
   ArrowUpRight,
   Plus
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Attendance, Task } from "@prisma/client";
 
-export default function Dashboard() {
+// Temporary fixed user ID for the demo/early functional phase
+const DUMMY_USER_ID = "cl_user_123";
+
+export default async function Dashboard() {
+  const totalHours = await prisma.attendance.aggregate({
+    where: { userId: DUMMY_USER_ID },
+    _sum: { hours: true }
+  });
+
+  const completedTasks = await prisma.task.count({
+    where: { userId: DUMMY_USER_ID, status: "DONE" }
+  });
+
+  const totalEntries = await prisma.attendance.count({
+    where: { userId: DUMMY_USER_ID }
+  });
+
+  const attendanceRate = totalEntries > 0 ? "100%" : "0%"; // Basic logic for now
+
+  const stats = [
+    { label: "Total Hours", value: totalHours._sum.hours?.toFixed(1) || "0", icon: Clock, trend: "+0h this week" },
+    { label: "Tasks Completed", value: completedTasks.toString(), icon: CheckCircle2, trend: "+0 today" },
+    { label: "Attendance Rate", value: attendanceRate, icon: Users, trend: "Status: Active" },
+    { label: "Reports Generated", value: "0", icon: BarChart3, trend: "Next due soon" },
+  ];
+
+  const recentActivity = await prisma.attendance.findMany({
+    where: { userId: DUMMY_USER_ID },
+    orderBy: { date: 'desc' },
+    take: 5
+  });
+
+  const upcomingTasks = await prisma.task.findMany({
+    where: { userId: DUMMY_USER_ID, status: { not: "DONE" } },
+    orderBy: { dueDate: 'asc' },
+    take: 3
+  });
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex justify-between items-end">
@@ -22,12 +62,7 @@ export default function Dashboard() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: "Total Hours", value: "124", icon: Clock, trend: "+12h this week" },
-          { label: "Tasks Completed", value: "18", icon: CheckCircle2, trend: "+3 today" },
-          { label: "Attendance Rate", value: "98%", icon: Users, trend: "-1% vs last month" },
-          { label: "Reports Generated", value: "4", icon: BarChart3, trend: "Next due in 3 days" },
-        ].map((stat) => (
+        {stats.map((stat) => (
           <div key={stat.label} className="glass p-6 rounded-2xl group hover:shadow-md transition-all duration-300">
             <div className="flex justify-between items-start">
               <div className="p-2 bg-primary/5 rounded-xl text-primary group-hover:scale-110 transition-transform">
@@ -45,24 +80,49 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 glass p-8 rounded-2xl h-[400px]">
+        <div className="lg:col-span-2 glass p-8 rounded-2xl h-[400px] overflow-y-auto">
           <h4 className="text-lg font-semibold mb-6">Recent Activity</h4>
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground border-2 border-dashed border-border rounded-xl">
-            <p>No recent activity. Start by checking in!</p>
-          </div>
+          {recentActivity.length > 0 ? (
+            <div className="space-y-4">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-center p-4 rounded-xl border border-border/50 bg-white/30">
+                  <div className="p-2 bg-green-50 rounded-lg mr-4">
+                    <Clock className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Checked in on {activity.date.toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">{activity.hours?.toFixed(1) || 0} hours logged</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground border-2 border-dashed border-border rounded-xl">
+              <p>No recent activity. Start by checking in!</p>
+            </div>
+          )}
         </div>
-        <div className="glass p-8 rounded-2xl h-[400px]">
+        <div className="glass p-8 rounded-2xl h-[400px] overflow-y-auto">
           <h4 className="text-lg font-semibold mb-6">Upcoming Deadlines</h4>
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center p-3 rounded-xl border border-border/50 hover:bg-white/50 transition-colors cursor-pointer">
-                <div className="w-2 h-2 rounded-full bg-orange-500 mr-4" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Weekly Report W{i + 5}</p>
-                  <p className="text-xs text-muted-foreground">Due in {i + 1} days</p>
+            {upcomingTasks.length > 0 ? (
+              upcomingTasks.map((task) => (
+                <div key={task.id} className="flex items-center p-3 rounded-xl border border-border/50 hover:bg-white/50 transition-colors cursor-pointer">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full mr-4",
+                    task.priority === "HIGH" ? "bg-red-500" : "bg-orange-500"
+                  )} />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{task.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {task.dueDate ? `Due ${task.dueDate.toLocaleDateString()}` : "No deadline"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground italic text-center py-10">No upcoming deadlines.</p>
+            )}
           </div>
         </div>
       </div>
