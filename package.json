@@ -1,6 +1,7 @@
 {
   "name": "internship-tracker",
   "description": "Internship monitoring and reporting platform",
+  "build_trigger": "2026-02-16T09:37:00",
   "version": "0.1.0",
   "private": true,
   "scripts": {
