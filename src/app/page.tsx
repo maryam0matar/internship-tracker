@@ -55,7 +55,7 @@ export default async function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard v4</h2>
           <p className="text-muted-foreground mt-1">Welcome back, Mariam. Here's your internship overview.</p>
         </div>
         <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg flex items-center text-sm font-medium hover:opacity-90 transition-opacity">
