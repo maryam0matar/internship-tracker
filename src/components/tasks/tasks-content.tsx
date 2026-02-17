@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { Task, TaskStatus } from "@prisma/client";
 import { updateTaskStatus } from "@/app/tasks/actions";
 import { useState } from "react";
+import { CreateTaskModal } from "./create-task-modal";
 
 const columns: { id: TaskStatus, title: string }[] = [
     { id: "TODO", title: "To Do" },
@@ -24,11 +25,18 @@ interface TasksContentProps {
 
 export function TasksContent({ tasks: initialTasks }: TasksContentProps) {
     const [tasks, setTasks] = useState(initialTasks);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalDefaultStatus, setModalDefaultStatus] = useState<string>("TODO");
 
     const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
         // Optimistic update
         setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
         await updateTaskStatus(taskId, newStatus);
+    };
+
+    const openModalForColumn = (columnId: string) => {
+        setModalDefaultStatus(columnId);
+        setModalOpen(true);
     };
 
     return (
@@ -38,7 +46,10 @@ export function TasksContent({ tasks: initialTasks }: TasksContentProps) {
                     <h2 className="text-3xl font-bold tracking-tight">Tasks</h2>
                     <p className="text-muted-foreground mt-1">Manage your internship deliverables and milestones.</p>
                 </div>
-                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-xl flex items-center text-sm font-medium hover:opacity-90 shadow-md">
+                <button
+                    onClick={() => openModalForColumn("TODO")}
+                    className="bg-primary text-primary-foreground px-4 py-2 rounded-xl flex items-center text-sm font-medium hover:opacity-90 shadow-md"
+                >
                     <Plus className="mr-2 h-4 w-4" />
                     New Task
                 </button>
@@ -103,7 +114,10 @@ export function TasksContent({ tasks: initialTasks }: TasksContentProps) {
                                         </div>
                                     </motion.div>
                                 ))}
-                            <button className="w-full py-2 rounded-xl text-xs font-semibold text-muted-foreground border border-dashed border-border hover:bg-white/50 hover:text-foreground transition-all flex items-center justify-center">
+                            <button
+                                onClick={() => openModalForColumn(col.id)}
+                                className="w-full py-2 rounded-xl text-xs font-semibold text-muted-foreground border border-dashed border-border hover:bg-white/50 hover:text-foreground transition-all flex items-center justify-center"
+                            >
                                 <Plus className="h-3 w-3 mr-1" />
                                 Add Task
                             </button>
@@ -111,6 +125,13 @@ export function TasksContent({ tasks: initialTasks }: TasksContentProps) {
                     </div>
                 ))}
             </div>
+
+            <CreateTaskModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                defaultStatus={modalDefaultStatus}
+            />
         </div>
     );
 }
+

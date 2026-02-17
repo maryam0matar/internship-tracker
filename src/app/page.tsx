@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AttendanceContent } from "@/components/attendance/attendance-content";
 import { Attendance, Task } from "@prisma/client";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -58,10 +59,10 @@ export default async function Dashboard() {
           <h2 className="text-3xl font-bold tracking-tight">Dashboard v4</h2>
           <p className="text-muted-foreground mt-1">Welcome back, Mariam. Here's your internship overview.</p>
         </div>
-        <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg flex items-center text-sm font-medium hover:opacity-90 transition-opacity">
+        <Link href="/attendance" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg flex items-center text-sm font-medium hover:opacity-90 transition-opacity">
           <Plus className="mr-2 h-4 w-4" />
           Add Entry
-        </button>
+        </Link>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

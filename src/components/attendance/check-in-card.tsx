@@ -27,7 +27,7 @@ export function CheckInCard({ initialRecord }: CheckInCardProps) {
     const handleCheckIn = async () => {
         setLoading(true);
         try {
-            const res = await checkIn("PRESENT");
+            const res = await checkIn("PRESENT", undefined, new Date().toISOString());
             if ('id' in res) {
                 setRecord(res);
             }
@@ -42,7 +42,7 @@ export function CheckInCard({ initialRecord }: CheckInCardProps) {
         if (!record?.id) return;
         setLoading(true);
         try {
-            const res = await checkOut(record.id);
+            const res = await checkOut(record.id, new Date().toISOString());
             if ('id' in res) {
                 setRecord(res);
             }

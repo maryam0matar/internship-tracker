@@ -7,8 +7,9 @@ import { revalidatePath } from "next/cache";
 // Temporary fixed user ID for the demo/early functional phase
 const DUMMY_USER_ID = "cl_user_123";
 
-export async function checkIn(status: AttendanceStatus = "PRESENT", notes?: string) {
-    const today = new Date();
+export async function checkIn(status: AttendanceStatus = "PRESENT", notes?: string, clientTimestamp?: string) {
+    const now = clientTimestamp ? new Date(clientTimestamp) : new Date();
+    const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
     // Check if already checked in today
@@ -39,8 +40,8 @@ export async function checkIn(status: AttendanceStatus = "PRESENT", notes?: stri
             userId: DUMMY_USER_ID,
             status,
             notes,
-            date: new Date(),
-            checkIn: new Date(),
+            date: now,
+            checkIn: now,
         },
     });
 
@@ -49,11 +50,12 @@ export async function checkIn(status: AttendanceStatus = "PRESENT", notes?: stri
     return record;
 }
 
-export async function checkOut(id: string) {
+export async function checkOut(id: string, clientTimestamp?: string) {
+    const now = clientTimestamp ? new Date(clientTimestamp) : new Date();
     const record = await prisma.attendance.update({
         where: { id },
         data: {
-            checkOut: new Date(),
+            checkOut: now,
         },
     });
 
